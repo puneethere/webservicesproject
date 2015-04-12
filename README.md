@@ -4,24 +4,62 @@ WebServiceProject
 What is it?
 -----------
 
-This is your project! It's a sample, deployable Maven 3 project to help you
-get your foot in the door developing with Java EE 6 on JBoss AS 7. This 
-project is setup to allow you to create a compliant Java EE 6 application 
-using JSF 2.0, CDI 1.0, EJB 3.1, JPA 2.0 and Bean Validation 1.0. It includes
-a persistence unit and some sample persistence and transaction code to help 
-you get your feet wet with database access in enterprise Java. 
+It's a sample, deployable Maven 3 project with Java EE 6, Spring on JBoss AS 7.1.1
 
-System requirements
--------------------
+The project has three child projects, with there respective poms 
 
-All you need to build this project is Java 6.0 (Java SDK 1.6) or better, Maven
-3.0 or better.
+1) WebServiceProject-ear
+2) WebServiceProject-ejb
+3) WebServiceProject-web
 
-The application this project produces is designed to be run on a JBoss AS 7. 
+Web project has two web services, one REST based with Spring REST implementation and other SOAP based with JAX-WS implementation.
+
+1) REST Service with following endpoints:
+   POST: http://<hostname>:<port>/WebServiceProject/queueInterface/push?param1={param1}&param2={param2}
+   GET: http://<hostname>:<port>/WebServiceProject/queueInterface/push?param1={param1}&param2={param2}
+2) SOAP Service (http://<hostname>:<port>/WebServiceProject/GCDService?wsdl) with following exposed operations:
+	 int gcd()
+ 	ArrayList<Integer> gcdList()
+	 int gcdSum()
+
+EJB Project has following local stateless session beans
+
+1) GCDPersistenceBean: persist the GCD of the top elements of the JMS queue.
+2) ParameterPersistenceBean: persist the parameters added to the JMS queue.
+
+EAR project will package the web and ejb projects in an EAR file and deploy to the respective App Server.
+
+Database and App Server requirements
+----------------------------------------------
+
+All you need to build this project is Java 6.0 (Java SDK 1.6) or better, Maven 3.0 or better.
+The application this project produces is designed to be run on a JBoss AS 7.1.1 and on MY SQL relational database.
+Following are the requirements of the project, in order to successfully run on the application server:
+
+1) JMS queue with the JNDI name: java:/unico/parameterQueue needs to configured.
+2) Datasource with JNDI name: java:/MySqlDS needs to be configured.
+
+Following are the database scripts:
+
+create schema WEBSERVICES;
+
+create table parameter (
+id BIGINT(10) NOT NULL PRIMARY KEY,
+param_value BIGINT(10) NOT NULL
+)
+alter table parameter AUTO_INCREMENT=1;
+alter table parameter add column entered_date DATETIME NOT NULL;
+
+create table gcd (
+id BIGINT(10) NOT NULL PRIMARY KEY,
+gcd_value BIGINT(10) NOT NULL,
+entered_date DATETIME NOT NULL
+)
+alter table gcd modify column id INT auto_increment;
+
  
 NOTE:
 This project some retrieves artifacts from the JBoss Community Maven repository.
-
 With the prerequisites out of the way, you're ready to build and deploy.
 
 Deploying the application
@@ -38,9 +76,9 @@ or if you are using windows
 To deploy the application, you first need to produce the archive to deploy using
 the following Maven goal:
 
-    mvn package
+    mvn clean compile install
 
-You can now deploy the artifact to JBoss AS by executing the following command:
+You can now deploy the artifact to JBoss AS by executing the following command from EAR project directory:
 
     mvn jboss-as:deploy
 
@@ -55,19 +93,6 @@ To undeploy from JBoss AS, run this command:
 You can also start JBoss AS 7 and deploy the project using Eclipse. See the JBoss AS 7
 Getting Started Guide for Developers for more information.
  
-Running the Arquillian tests
-============================
-
-By default, tests are configured to be skipped. The reason is that the sample
-test is an Arquillian test, which requires the use of a container. You can
-activate this test by selecting one of the container configuration provided 
-for JBoss AS 7 (remote).
-
-To run the test in JBoss AS 7, first start a JBoss AS 7 instance. Then, run the
-test goal with the following profile activated:
-
-    mvn clean test -Parq-jbossas-remote
-
 Importing the project into an IDE
 =================================
 
@@ -83,13 +108,3 @@ project. Both of these IDEs recognize Maven projects natively.
 Detailed instructions for using Eclipse with JBoss AS 7 are provided in the 
 JBoss AS 7 Getting Started Guide for Developers.
 
-Downloading the sources and Javadocs
-====================================
-
-If you want to be able to debug into the source code or look at the Javadocs
-of any library in the project, you can run either of the following two
-commands to pull them into your local repository. The IDE should then detect
-them.
-
-    mvn dependency:sources
-    mvn dependency:resolve -Dclassifier=javadoc
