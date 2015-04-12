@@ -1,5 +1,5 @@
 WebServiceProject
-=====================
+=================
 
 What is it?
 -----------
@@ -28,6 +28,8 @@ EJB Project has following local stateless session beans
 2) ParameterPersistenceBean: persist the parameters added to the JMS queue.
 
 EAR project will package the web and ejb projects in an EAR file and deploy to the respective App Server.
+
+In addition to the main project, WebServiceTest project is also included which have the client classes to test the SOAP web service.
 
 Database and App Server requirements
 ----------------------------------------------
